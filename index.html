@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UDROP • Transform Every Transaction into Lasting Impact</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@coinbase/wallet-sdk@3.3.0/dist/CoinbaseWalletSDK.min.js"></script>
+  <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
+  <style>
+    /* UDROP enhanced brand palette */
+    :root {
+      --bg: #faf9fe;
+      --surface: #ffffff;
+      --primary: #6f42c1;
+      --primary-d: #563099;
+      --secondary: #26c281;
+      --secondary-d: #1fa16b;
+      --tertiary: #4a90e2;
+      --text: #202124;
+      --muted: #5f6380;
+      --border: #e5e3f1;
+      --shadow: 0 6px 20px rgba(111,66,193,.08);
+      --success: #28a745;
+      --warning: #ffc107;
+      --error: #dc3545;
+    }
+    
+    /* Reset & Base */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px}
+    h1,h2,h3{margin-bottom:1rem;font-weight:600}
+    h1{font-size:2.5rem}
+    h2{font-size:1.8rem;margin-top:2rem}
+    h3{font-size:1.3rem;margin-top:1.5rem}
+    p{font-size:1rem;color:var(--muted);margin-top:.6rem;margin-bottom:1rem}
+    ul{list-style:none;margin-left:0}
+    li{margin-bottom:0.8rem}
+    a{color:var(--primary);text-decoration:none;transition:all 0.2s ease}
+    a:hover{opacity:.9}
+    
+    /* Layout */
+    .container{max-width:1140px;margin:0 auto;padding:0 1.5rem}
+    .row{display:flex;flex-wrap:wrap;margin:0 -1rem}
+    .col{flex:1;padding:0 1rem}
+    .col-4{flex:0 0 33.333%;padding:0 1rem}
+    .col-6{flex:0 0 50%;padding:0 1rem}
+    .col-8{flex:0 0 66.667%;padding:0 1rem}
+    
+    /* Header & Navigation */
+    header{background:linear-gradient(135deg,var(--primary)0%,var(--primary-d)100%);padding:1.5rem 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+    .navbar{display:flex;justify-content:space-between;align-items:center}
+    .logo-container{display:flex;align-items:center}
+    .logo{height:140px;margin-right:1rem}
+    .logo-text{color:#fff;font-weight:600;font-size:1.5rem}
+    .nav-links{display:flex;list-style:none}
+    .nav-links li{margin:0 1rem}
+    .nav-links a{color:#fff;font-weight:500;position:relative}
+    .nav-links a::after{content:'';position:absolute;width:0;height:2px;bottom:-4px;left:0;background-color:#fff;transition:width 0.3s}
+    .nav-links a:hover::after{width:100%}
+    .mobile-menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer}
+    .connect-btn{background:var(--secondary);color:#fff;border:none;border-radius:8px;padding:0.6rem 1.2rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .connect-btn:hover{background:var(--secondary-d);transform:translateY(-2px)}
+    .connect-btn.connected{background:var(--tertiary)}
+    
+    /* Hero Section */
+    .hero{background:linear-gradient(135deg,rgba(111,66,193,0.05)0%,rgba(111,66,193,0.1)100%);padding:6rem 0;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI3NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0iTTAgMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEiIGZpbGw9InJnYmEoMTExLDY2LDE5MywwLjA1KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==');opacity:0.5}
+    .hero-content{position:relative;z-index:1;max-width:600px}
+    .hero h1{font-size:3rem;line-height:1.2;margin-bottom:1.5rem;color:var(--primary-d)}
+    .hero p{font-size:1.2rem;margin-bottom:2rem}
+    .hero-buttons{display:flex;gap:1rem;margin-top:2rem}
+    .btn{padding:0.8rem 1.8rem;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center;display:inline-block}
+    .btn-primary{background:var(--primary);color:#fff;border:none}
+    .btn-primary:hover{background:var(--primary-d);transform:translateY(-2px);text-decoration:none}
+    .btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary)}
+    .btn-outline:hover{background:rgba(111,66,193,0.1);transform:translateY(-2px);text-decoration:none}
+    
+    /* Features Section */
+    .features{padding:5rem 0;background:var(--surface)}
+    .section-title{text-align:center;margin-bottom:3rem}
+    .section-title h2{color:var(--primary);margin-bottom:1rem}
+    .section-title p{max-width:600px;margin:0 auto}
+    .feature-card{background:#fff;border-radius:12px;padding:2rem;box-shadow:var(--shadow);height:100%;transition:all 0.3s}
+    .feature-card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(111,66,193,.12)}
+    .feature-icon{width:60px;height:60px;background:rgba(111,66,193,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
+    .feature-icon i{font-size:1.8rem;color:var(--primary)}
+    .feature-card h3{color:var(--text);margin-bottom:1rem}
+    
+    /* How It Works */
+    .how-it-works{padding:5rem 0;background:linear-gradient(135deg,rgba(111,66,193,0.03)0%,rgba(111,66,193,0.06)100%)}
+    .steps{display:flex;justify-content:space-between;margin-top:3rem;position:relative}
+    .steps::before{content:'';position:absolute;top:40px;left:10%;right:10%;height:2px;background:var(--border);z-index:0}
+    .step{flex:1;text-align:center;position:relative;z-index:1}
+    .step-number{width:80px;height:80px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.8rem;font-weight:600;position:relative}
+    .step-content{padding:0 1rem}
+    
+    /* Impact Dashboard */
+    .impact{padding:5rem 0;background:var(--surface)}
+    .impact-metrics{display:flex;justify-content:space-between;margin-top:2rem}
+    .metric{text-align:center;padding:2rem;background:#fff;border-radius:12px;box-shadow:var(--shadow);flex:1;margin:0 1rem}
+    .metric-value{font-size:2.5rem;font-weight:600;color:var(--primary);margin-bottom:0.5rem}
+    .metric-label{color:var(--muted);font-size:1rem}
+    .impact-chart{margin-top:3rem;background:#fff;border-radius:12px;padding:2rem;box-shadow:var(--shadow)}
+    
+    /* Tokenomics */
+    .tokenomics{padding:5rem 0;background:linear-gradient(135deg,rgba(111,66,193,0.03)0%,rgba(111,66,193,0.06)100%)}
+    .token-distribution{display:flex;margin-top:3rem}
+    .distribution-chart{flex:1;padding:2rem;background:#fff;border-radius:12px;box-shadow:var(--shadow);margin-right:2rem}
+    .distribution-details{flex:1}
+    .distribution-item{display:flex;align-items:center;margin-bottom:1rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:var(--shadow)}
+    .distribution-color{width:20px;height:20px;border-radius:4px;margin-right:1rem}
+    .distribution-info{flex:1}
+    .distribution-percentage{font-weight:600;color:var(--primary)}
+    
+    /* Swap Interface */
+    .swap{padding:5rem 0;background:var(--surface)}
+    .swap-container{max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:2rem;box-shadow:var(--shadow)}
+    .swap-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+    .swap-title{margin-bottom:0}
+    .wallet-info{text-align:right;font-size:0.9rem;display:none}
+    .wallet-address{color:var(--muted);margin-bottom:0.5rem}
+    .wallet-balance{font-weight:600;color:var(--text)}
+    .swap-form{margin-top:2rem;display:none}
+    .form-group{margin-bottom:1.5rem}
+    .form-label{display:block;margin-bottom:0.5rem;font-weight:500}
+    .form-control{width:100%;padding:1rem;border:1px solid var(--border);border-radius:8px;font-size:1rem;transition:all 0.2s}
+    .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(111,66,193,0.2)}
+    .token-select{display:flex;justify-content:space-between;align-items:center;background:#f5f5f7;border-radius:8px;padding:0.5rem 1rem;margin-bottom:1rem}
+    .token-select-text{font-weight:500}
+    .swap-divider{display:flex;align-items:center;justify-content:center;margin:1.5rem 0}
+    .swap-divider-line{flex:1;height:1px;background:var(--border)}
+    .swap-divider-icon{margin:0 1rem;width:40px;height:40px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .swap-details{background:#f5f5f7;border-radius:8px;padding:1rem;margin-top:1.5rem}
+    .swap-detail-item{display:flex;justify-content:space-between;margin-bottom:0.5rem}
+    .swap-detail-label{color:var(--muted)}
+    .swap-detail-value{font-weight:500}
+    .swap-button{width:100%;padding:1rem;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:1.1rem;cursor:pointer;transition:all 0.2s;margin-top:1.5rem}
+    .swap-button:hover{background:var(--primary-d)}
+    .swap-button:disabled{background:#ccc;cursor:not-allowed}
+    
+    /* Beneficiaries */
+    .beneficiaries{padding:5rem 0;background:linear-gradient(135deg,rgba(111,66,193,0.03)0%,rgba(111,66,193,0.06)100%)}
+    .beneficiary-card{background:#fff;border-radius:12px;padding:2rem;box-shadow:var(--shadow);margin-top:2rem}
+    .beneficiary-header{display:flex;align-items:center;margin-bottom:1.5rem}
+    .beneficiary-avatar{width:120px;height:80px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;margin-right:1.5rem}
+    .beneficiary-avatar i{font-size:2rem;color:#fff}
+    .beneficiary-info h3{margin-bottom:0.5rem}
+    .beneficiary-status{margin-top:1.5rem}
+    .progress-container{height:10px;background:var(--border);border-radius:5px;margin-bottom:0.5rem;overflow:hidden}
+    .progress-bar{height:100%;background:var(--primary);border-radius:5px;transition:width 0.3s ease}
+    .progress-stats{display:flex;justify-content:space-between;font-size:0.9rem}
+    .progress-current{font-weight:600;color:var(--primary)}
+    .progress-goal{color:var(--muted)}
+    
+    /* Roadmap */
+    .roadmap{padding:5rem 0;background:var(--surface)}
+    .timeline{position:relative;max-width:800px;margin:3rem auto 0}
+    .timeline::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--border)}
+    .timeline-item{display:flex;justify-content:flex-end;padding-right:30px;position:relative;margin-bottom:3rem;width:50%}
+    .timeline-item:nth-child(even){justify-content:flex-start;padding-right:0;padding-left:30px;margin-left:50%}
+    .timeline-item::before{content:'';position:absolute;top:15px;right:-13px;width:25px;height:25px;background:var(--primary);border-radius:50%}
+    .timeline-item:nth-child(even)::before{right:auto;left:-13px}
+    .timeline-content{background:#fff;border-radius:12px;padding:1.5rem;box-shadow:var(--shadow);width:100%}
+    .timeline-date{display:inline-block;padding:0.3rem 0.8rem;background:var(--primary);color:#fff;border-radius:4px;font-size:0.9rem;margin-bottom:1rem}
+    
+    /* FAQ */
+    .faq{padding:5rem 0;background:linear-gradient(135deg,rgba(111,66,193,0.03)0%,rgba(111,66,193,0.06)100%)}
+    .accordion{margin-top:2rem}
+    .accordion-item{background:#fff;border-radius:8px;margin-bottom:1rem;box-shadow:var(--shadow);overflow:hidden}
+    .accordion-header{padding:1.5rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .accordion-title{font-weight:600;margin:0}
+    .accordion-icon{transition:transform 0.3s}
+    .accordion-icon.active{transform:rotate(180deg)}
+    .accordion-content{padding:0 1.5rem;max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+    .accordion-content.active{padding:0 1.5rem 1.5rem}
+    
+    /* CTA Section */
+    .cta{padding:5rem 0;background:linear-gradient(135deg,var(--primary)0%,var(--primary-d)100%);color:#fff;text-align:center}
+    .cta h2{color:#fff;margin-bottom:1.5rem}
+    .cta p{color:rgba(255,255,255,0.8);max-width:600px;margin:0 auto 2rem}
+    
+    /* Footer */
+    footer{background:#fff;padding:4rem 0 2rem;border-top:1px solid var(--border)}
+    .footer-content{display:flex;flex-wrap:wrap;margin-bottom:3rem}
+    .footer-column{flex:1;min-width:200px;margin-bottom:2rem}
+    .footer-column h3{color:var(--text);font-size:1.2rem;margin-bottom:1.5rem}
+    .footer-links{list-style:none}
+    .footer-links li{margin-bottom:0.8rem}
+    .footer-links a{color:var(--muted);transition:all 0.2s}
+    .footer-links a:hover{color:var(--primary)}
+    .social-links{display:flex;gap:1rem}
+    .social-link{width:40px;height:40px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);transition:all 0.2s}
+    .social-link:hover{background:var(--primary);color:#fff;transform:translateY(-3px)}
+    .footer-bottom{text-align:center;padding-top:2rem;border-top:1px solid var(--border);color:var(--muted);font-size:0.9rem}
+    
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+      .col-4, .col-6, .col-8 {flex:0 0 100%}
+      .token-distribution{flex-direction:column}
+      .distribution-chart{margin-right:0;margin-bottom:2rem}
+      .steps::before{left:5%;right:5%}
+    }
+    
+    @media (max-width: 768px) {
+      .hero h1{font-size:2.5rem}
+      .hero-buttons{flex-direction:column}
+      .btn{width:100%;margin-bottom:1rem}
+      .impact-metrics{flex-direction:column}
+      .metric{margin:0 0 1rem}
+      .nav-links{display:none}
+      .mobile-menu-btn{display:block}
+      .timeline::before{left:30px}
+      .timeline-item{width:100%;padding-right:0;padding-left:80px}
+      .timeline-item:nth-child(even){margin-left:0;padding-left:80px}
+      .timeline-item::before, .timeline-item:nth-child(even)::before{left:17px}
+    }
+    
+    @media (max-width: 576px) {
+      .hero{padding:4rem 0}
+      .hero h1{font-size:2rem}
+      .section-title h2{font-size:1.5rem}
+      .feature-card{margin-bottom:1.5rem}
+      .step{margin-bottom:2rem}
+      .steps::before{display:none}
+    }
+    
+    /* Mobile Menu */
+    .mobile-menu{position:fixed;top:0;right:-300px;width:300px;height:100vh;background:var(--primary);z-index:1000;transition:right 0.3s ease;padding:2rem;box-shadow:-5px 0 15px rgba(0,0,0,0.1)}
+    .mobile-menu.active{right:0}
+    .mobile-menu-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer}
+    .mobile-nav-links{list-style:none;margin-top:3rem}
+    .mobile-nav-links li{margin-bottom:1.5rem}
+    .mobile-nav-links a{color:#fff;font-size:1.2rem;font-weight:500}
+    .mobile-connect-btn{width:100%;margin-top:2rem}
+    .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:none}
+    .overlay.active{display:block}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav class="navbar">
+        <div class="logo-container">
+          <img src="assets/udrop-logo.png" alt="UDROP logo" class="logo" />
+        </div>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#impact">Impact</a></li>
+          <li><a href="#tokenomics">Tokenomics</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <button class="connect-btn" id="connect-wallet">Connect Wallet</button>
+        <button class="mobile-menu-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="mobile-menu">
+    <button class="mobile-menu-close">
+      <i class="fas fa-times"></i>
+    </button>
+    <ul class="mobile-nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#impact">Impact</a></li>
+      <li><a href="#tokenomics">Tokenomics</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <button class="connect-btn mobile-connect-btn">Connect Wallet</button>
+  </div>
+  <div class="overlay"></div>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Transform Every Transaction into Lasting Impact</h1>
+        <p>UDROP is a revolutionary DeFi token that automatically generates aid with every trade. 5% of each transaction is converted to USDC and sent directly to those in need.</p>
+        <div class="hero-buttons">
+          <a href="#swap" class="btn btn-primary">Start Trading</a>
+          <a href="whitepaper.html" class="btn btn-outline">Read Whitepaper</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>Why Choose UDROP?</h2>
+        <p>Our innovative tokenomics model creates a sustainable ecosystem where trading activity directly generates charitable impact.</p>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-hand-holding-heart"></i>
+            </div>
+            <h3>Automatic Aid Generation</h3>
+            <p>5% of every transaction is automatically converted to USDC and sent directly to beneficiaries, creating a continuous stream of aid.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-lock"></i>
+            </div>
+            <h3>Self-Reinforcing Liquidity</h3>
+            <p>1-3% of each transaction is injected into locked liquidity, creating a steadily growing pool that enhances stability and reduces slippage.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Anti-Dump Protection</h3>
+            <p>Dynamic sell taxes, cooldown periods, and maximum sell limits protect long-term holders and maintain price stability.</p>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 2rem;">
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Liquidity Builder Phase</h3>
+            <p>Initial launch phase with enhanced LP injection and transaction limits to ensure stable price discovery and accelerated liquidity growth.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <h3>Automatic Circuit Breaker</h3>
+            <p>Dynamic price impact threshold that automatically adjusts based on liquidity size to prevent excessive volatility.</p>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3>Community Governance</h3>
+            <p>Future DAO governance will allow token holders to vote on beneficiary selection, protocol parameters, and ecosystem expansion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <div class="section-title">
+        <h2>How It Works</h2>
+        <p>UDROP's innovative tokenomics model creates a virtuous cycle of trading, liquidity growth, and charitable impact.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Trade UDROP</h3>
+            <p>Buy or sell UDROP tokens on any supported DEX. Every transaction automatically triggers the tokenomics distribution.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Automatic Distribution</h3>
+            <p>5% goes to aid, 1-3% to liquidity, and 94% to traders. All handled by the smart contract with no manual intervention.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Direct Impact</h3>
+            <p>Aid is delivered in USDC directly to beneficiaries, providing stable value and immediate utility.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Growing Ecosystem</h3>
+            <p>As trading volume increases, both aid generation and liquidity grow, creating a sustainable ecosystem.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="impact" class="impact">
+    <div class="container">
+      <div class="section-title">
+        <h2>Impact Dashboard</h2>
+        <p>Track the real-world impact generated through UDROP trading activity.</p>
+      </div>
+      <div class="impact-metrics">
+        <div class="metric">
+          <div class="metric-value">$0</div>
+          <div class="metric-label">Total Aid Generated</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">0</div>
+          <div class="metric-label">Transactions</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">$0</div>
+          <div class="metric-label">Locked Liquidity</div>
+        </div>
+      </div>
+      <div class="impact-stats" style="margin-top: 3rem; text-align: center;">
+        <p>The UDROP platform is currently in pre-launch phase. Impact metrics will be updated in real-time once trading begins.</p>
+        <p>Based on our simulation with just $50 initial liquidity, we project $47.69 in aid generated in the first week alone.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tokenomics" class="tokenomics">
+    <div class="container">
+      <div class="section-title">
+        <h2>Tokenomics</h2>
+        <p>Our carefully designed tokenomics model creates a sustainable ecosystem that benefits all participants.</p>
+      </div>
+      <div class="token-distribution">
+        <div class="distribution-details">
+          <h3>Transaction Fee Distribution</h3>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #6f42c1;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">5%</div>
+              <p>Aid Generation (USDC sent directly to beneficiaries)</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #26c281;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">1-3%</div>
+              <p>Liquidity Injection (1% on buys, 3% on sells)</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #4a90e2;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">94%</div>
+              <p>To Recipient (as UDROP tokens)</p>
+            </div>
+          </div>
+          
+          <h3 style="margin-top: 2rem;">Token Allocation</h3>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #6f42c1;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">50%</div>
+              <p>Initial Liquidity</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #26c281;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">15%</div>
+              <p>Team & Development (vested over 2 years)</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #4a90e2;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">15%</div>
+              <p>Community Rewards</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #ffc107;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">10%</div>
+              <p>Marketing & Partnerships</p>
+            </div>
+          </div>
+          <div class="distribution-item">
+            <div class="distribution-color" style="background-color: #dc3545;"></div>
+            <div class="distribution-info">
+              <div class="distribution-percentage">10%</div>
+              <p>Liquidity Incentives</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="swap" class="swap">
+    <div class="container">
+      <div class="section-title">
+        <h2>Swap & Donate</h2>
+        <p>Trade USDC for UDROP tokens and automatically generate aid with every transaction.</p>
+      </div>
+      <div class="swap-container">
+        <div class="swap-header">
+          <h3 class="swap-title">Swap Tokens</h3>
+          <div id="wallet-info" class="wallet-info">
+            <div id="wallet-address" class="wallet-address">0x0000...0000</div>
+            <div id="wallet-balance" class="wallet-balance">0.00 UDROP</div>
+          </div>
+        </div>
+        <div id="connect-wallet-swap" style="text-align: center;">
+          <p>Connect your wallet to start trading UDROP tokens.</p>
+          <button class="connect-btn" style="margin-top: 1rem;">Connect Wallet</button>
+        </div>
+        <div id="swap-form" class="swap-form">
+          <div class="form-group">
+            <label class="form-label">Pay with</label>
+            <div class="token-select">
+              <span class="token-select-text">USDC</span>
+              <span>Balance: <span id="usdc-balance">0.00</span></span>
+            </div>
+            <input type="number" class="form-control" id="usdc-amount" placeholder="0.00">
+          </div>
+          <div class="swap-divider">
+            <div class="swap-divider-line"></div>
+            <div class="swap-divider-icon">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="swap-divider-line"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Receive (estimated)</label>
+            <div class="token-select">
+              <span class="token-select-text">UDROP</span>
+              <span>Balance: <span id="udrop-balance">0.00</span></span>
+            </div>
+            <input type="number" class="form-control" id="udrop-amount" placeholder="0.00" disabled>
+          </div>
+          <div class="swap-details">
+            <div class="swap-detail-item">
+              <span class="swap-detail-label">Exchange Rate</span>
+              <span class="swap-detail-value">1 USDC = 1,000,000 UDROP</span>
+            </div>
+            <div class="swap-detail-item">
+              <span class="swap-detail-label">Aid Amount (5%)</span>
+              <span class="swap-detail-value" id="aid-amount">0.00 USDC</span>
+            </div>
+            <div class="swap-detail-item">
+              <span class="swap-detail-label">LP Addition (1%)</span>
+              <span class="swap-detail-value" id="lp-amount">0.00 USDC</span>
+            </div>
+            <div class="swap-detail-item">
+              <span class="swap-detail-label">You Receive (94%)</span>
+              <span class="swap-detail-value" id="receive-amount">0 UDROP</span>
+            </div>
+          </div>
+          <button id="swap-button" class="swap-button" disabled>Swap & Receive UDROP</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="beneficiaries" class="beneficiaries">
+    <div class="container">
+      <div class="section-title">
+        <h2>Current Beneficiary</h2>
+        <p>Our pilot case supports a family in need, with future phases expanding to multiple causes.</p>
+      </div>
+      <div class="beneficiary-card">
+        <div class="beneficiary-header">
+          <div class="beneficiary-avatar">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="beneficiary-info">
+            <h3>Family in Crisis (pilot case)</h3>
+            <p>Bringing together the final family members displaced by conflict in the wake of a heartbreaking loss. UDROP's first mission directs 5% of every trade in USDC to cover their immediate needs.</p>
+          </div>
+        </div>
+        <div class="beneficiary-status">
+          <h4>Funding Progress</h4>
+          <div class="progress-container">
+            <div class="progress-bar" style="width: 0%"></div>
+          </div>
+          <div class="progress-stats">
+            <span class="progress-current">$0 raised</span>
+            <span class="progress-goal">Goal: $10,000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="roadmap">
+    <div class="container">
+      <div class="section-title">
+        <h2>Project Roadmap</h2>
+        <p>Our phased approach ensures controlled growth and continuous improvement.</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">Phase 1 (Current - Q2 2025)</span>
+            <h3>Pilot Launch</h3>
+            <ul>
+              <li>Launch pilot with single beneficiary</li>
+              <li>Implement core tokenomics and anti-dump mechanisms</li>
+              <li>Deploy basic website with swap functionality</li>
+              <li>Establish transparency reporting</li>
+            </ul>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">Phase 2 (Q3 2025)</span>
+            <h3>Community & Governance</h3>
+            <ul>
+              <li>Implement multi-beneficiary support</li>
+              <li>Launch governance advisory board</li>
+              <li>Introduce staking rewards</li>
+              <li>Deploy enhanced dashboard with impact tracking</li>
+            </ul>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">Phase 3 (Q1 2026)</span>
+            <h3>Expansion & Yield</h3>
+            <ul>
+              <li>Launch full DAO governance</li>
+              <li>Implement yield strategies</li>
+              <li>Expand to multiple blockchains</li>
+              <li>Introduce NFT impact certificates</li>
+            </ul>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">Phase 4 (Q3 2026)</span>
+            <h3>Global Ecosystem</h3>
+            <ul>
+              <li>Implement fiat on-ramps</li>
+              <li>Launch mobile application</li>
+              <li>Develop API for third-party integrations</li>
+              <li>Establish grant program for charitable initiatives</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <div class="container">
+      <div class="section-title">
+        <h2>Frequently Asked Questions</h2>
+        <p>Find answers to common questions about UDROP.</p>
+      </div>
+      <div class="accordion">
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <h3 class="accordion-title">Why hold UDROP tokens?</h3>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+            <p>Holding UDROP aligns incentives: as the network grows, more aid is generated. Additionally, UDROP tokens grant governance rights in future phases, allowing holders to vote on new beneficiaries and protocol changes. Long-term holders will also benefit from staking rewards in Phase 3.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <h3 class="accordion-title">How are causes chosen?</h3>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+            <p>In Phase 1, we're focusing on a single pilot case to validate the mechanics. Phase 2 introduces community governance, where UDROP holders can nominate and vote on new beneficiaries. This ensures a democratic, transparent process for selecting worthy causes.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <h3 class="accordion-title">How do the anti-dump mechanisms work?</h3>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+            <p>UDROP implements several protections: 1) Dynamic sell taxes that decrease over time, 2) A 30-minute cooldown between sells from the same wallet, 3) A maximum sell limit of 10% of wallet balance per transaction, and 4) A circuit breaker that prevents high-impact trades. These mechanisms protect long-term holders and maintain price stability.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <h3 class="accordion-title">Is the smart contract audited?</h3>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+            <p>The smart contract is currently in review phase. We're implementing best practices from OpenZeppelin standards and will conduct a full audit before Phase 2 launch. All contract code is open-source and available for community review.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <h3 class="accordion-title">What's next for UDROP?</h3>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+          </div>
+          <div class="accordion-content">
+            <p>Our roadmap outlines exciting developments: multi-beneficiary support, staking rewards, yield strategies, cross-chain deployment, and eventually a mobile app with fiat on-ramps. We're building a comprehensive ecosystem that makes charitable giving accessible, transparent, and rewarding.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Join the Movement</h2>
+      <p>Be part of a revolutionary approach to charitable giving that combines DeFi innovation with real-world impact.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>COMMUNITY</h3>
+          <div class="social-links">
+            <a href="#" class="social-link"><i class="fab fa-x"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-telegram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Resources</h3>
+          <ul class="footer-links">
+            <li><a href="whitepaper.html">Whitepaper</a></li>
+            <li><a href="https://github.com/udrop-project" target="_blank">GitHub</a></li>
+            <li><a href="https://etherscan.io" target="_blank">Smart Contract</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Community</h3>
+          <ul class="footer-links">
+            <li><a href="#">Twitter</a></li>
+            <li><a href="#">Telegram</a></li>
+            <li><a href="#">Discord</a></li>
+            <li><a href="#">Medium</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Legal</h3>
+          <ul class="footer-links">
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="disclaimer.html">Disclaimer</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 UDROP • All rights reserved</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/web3-connect.js"></script>
+  <script>
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const mobileMenuClose = document.querySelector('.mobile-menu-close');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    const overlay = document.querySelector('.overlay');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.add('active');
+      overlay.classList.add('active');
+    });
+    
+    mobileMenuClose.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+    
+    overlay.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+    
+    // Smooth Scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        if (mobileMenu.classList.contains('active')) {
+          mobileMenu.classList.remove('active');
+          overlay.classList.remove('active');
+        }
+        
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+    
+    // Accordion
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    
+    accordionHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const accordionContent = header.nextElementSibling;
+        const icon = header.querySelector('.accordion-icon');
+        
+        // Toggle active class
+        icon.classList.toggle('active');
+        
+        // If the accordion is open, close it, else open it
+        if (accordionContent.style.maxHeight) {
+          accordionContent.style.maxHeight = null;
+          accordionContent.classList.remove('active');
+        } else {
+          accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
+          accordionContent.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
